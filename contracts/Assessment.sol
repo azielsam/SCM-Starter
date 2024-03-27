@@ -10,9 +10,22 @@ contract Assessment {
     event Deposit(uint256 amount);
     event Withdraw(uint256 amount);
 
+    struct Item {
+        string name;
+        uint256 price;
+    }
+
+    mapping(string => Item) private _items;
+
+    event Buy(address indexed buyer, string item, uint256 price);
+
     constructor(uint initBalance) payable {
         owner = payable(msg.sender);
         balance = initBalance;
+
+        _items["Dog"] = Item("Dog", 20);
+        _items["Cat"] = Item("Cat", 150);
+        _items["Fish"] = Item("Fish", 250);
     }
 
     function getBalance() public view returns(uint256){
@@ -56,5 +69,17 @@ contract Assessment {
 
         // emit the event
         emit Withdraw(_withdrawAmount);
+    }
+
+    function buy(string memory itemName) public {
+        Item memory item = _items[itemName];
+        require(bytes(item.name).length > 0, "Item not found");
+        require(balance >= item.price, "Insufficient balance");
+
+        // Perform purchase
+        balance -= item.price;
+
+        // Emit the Buy event
+        emit Buy(msg.sender, itemName, item.price);
     }
 }
